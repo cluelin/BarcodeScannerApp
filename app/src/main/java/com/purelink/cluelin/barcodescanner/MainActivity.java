@@ -26,6 +26,7 @@ import android.view.View;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.gms.common.api.CommonStatusCodes;
 import com.google.android.gms.vision.barcode.Barcode;
@@ -41,9 +42,12 @@ public class MainActivity extends Activity implements View.OnClickListener {
     // use a compound button so either checkbox or switch widgets work.
     private CompoundButton autoFocus;
     private CompoundButton useFlash;
+    private CompoundButton onlyCode128;
     private TextView statusMessage;
     private TextView barcodeValueTextView;
     private EditText mailAddress;
+
+    private ArrayList<String> barcodeValueList = new ArrayList<>();
 
     String serialSequence = "";
 
@@ -61,10 +65,13 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
         autoFocus = (CompoundButton) findViewById(R.id.auto_focus);
         useFlash = (CompoundButton) findViewById(R.id.use_flash);
-
+        onlyCode128 = (CompoundButton) findViewById(R.id.code_128);
         findViewById(R.id.read_barcode).setOnClickListener(this);
 
         mailAddress = (EditText) findViewById(R.id.mailID);
+
+
+
     }
 
     /**
@@ -79,6 +86,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
             Intent intent = new Intent(this, BarcodeCaptureActivity.class);
             intent.putExtra(BarcodeCaptureActivity.AutoFocus, autoFocus.isChecked());
             intent.putExtra(BarcodeCaptureActivity.UseFlash, useFlash.isChecked());
+            intent.putExtra(BarcodeCaptureActivity.Code128, onlyCode128.isChecked());
 
             //바코드로 찍은 값을 Result로 받아오게 함.
             //Barcode value return to Result.
@@ -118,11 +126,30 @@ public class MainActivity extends Activity implements View.OnClickListener {
                     Barcode barcode = data.getParcelableExtra(BarcodeCaptureActivity.BarcodeObject);
                     statusMessage.setText(R.string.barcode_success);
 
+                    //중복확인
+                    if (barcodeValueList.contains(barcode.displayValue)){
+
+                        Log.d("태그", "중복됨");
+                        Toast.makeText(this, "중복됨!", Toast.LENGTH_SHORT).show();
+
+                    }else{
+                        Log.d("태그", "barcode.displayValue : " + barcode.displayValue);
+                        barcodeValueList.add(barcode.displayValue);
+
+                        Log.d("태그", "barcode size : " + barcodeValueList.size());
+                    }
+
+
                     //가지고 있는 Serial number 목록에 읽어온 Barcode값을 추가.
-                    serialSequence = serialSequence + barcode.displayValue + "\n";
+
+                    serialSequence = "";
+                    for (int i = 0 ; i < barcodeValueList.size() ; i++){
+                        serialSequence = serialSequence + barcodeValueList.get(i) + "\n";
+                        Log.d("태그", "barcodeValueList.get(i) "  + barcodeValueList.get(i) );
+                    }
 
                     //가지고있는 Serial number list를 textView에 출력.
-                    barcodeValueTextView.setText(serialSequence);
+                    barcodeValueTextView.setText(barcodeValueList.size() + "개 \n" + serialSequence );
 
                     Log.d(TAG, "Barcode read: " + barcode.displayValue);
                 } else {

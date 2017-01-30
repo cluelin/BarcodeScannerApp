@@ -69,6 +69,7 @@ public final class BarcodeCaptureActivity extends AppCompatActivity {
     // constants used to pass extra data in the intent
     public static final String AutoFocus = "AutoFocus";
     public static final String UseFlash = "UseFlash";
+    public static final String Code128 = "Code128";
     public static final String BarcodeObject = "Barcode";
 
     private CameraSource mCameraSource;
@@ -93,12 +94,13 @@ public final class BarcodeCaptureActivity extends AppCompatActivity {
         // read parameters from the intent used to launch the activity.
         boolean autoFocus = getIntent().getBooleanExtra(AutoFocus, false);
         boolean useFlash = getIntent().getBooleanExtra(UseFlash, false);
+        boolean code128 = getIntent().getBooleanExtra(Code128, false);
 
         // Check for the camera permission before accessing the camera.  If the
         // permission is not granted yet, request permission.
         int rc = ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA);
         if (rc == PackageManager.PERMISSION_GRANTED) {
-            createCameraSource(autoFocus, useFlash);
+            createCameraSource(autoFocus, useFlash, code128);
         } else {
             requestCameraPermission();
         }
@@ -161,7 +163,7 @@ public final class BarcodeCaptureActivity extends AppCompatActivity {
      * the constant.
      */
     @SuppressLint("InlinedApi")
-    private void createCameraSource(boolean autoFocus, boolean useFlash) {
+    private void createCameraSource(boolean autoFocus, boolean useFlash, boolean code128) {
         Context context = getApplicationContext();
 
         // A barcode detector is created to track barcodes.  An associated multi-processor instance
@@ -170,9 +172,22 @@ public final class BarcodeCaptureActivity extends AppCompatActivity {
         // create a separate tracker instance for each barcode.
 
 //        change original code to detect only CODE_128 type barcode
-        BarcodeDetector barcodeDetector = new BarcodeDetector.Builder(context)
-//                .setBarcodeFormats(Barcode.CODE_128)
-                .build();
+
+        BarcodeDetector barcodeDetector;
+
+        if (code128){
+            barcodeDetector = new BarcodeDetector.Builder(context)
+                    .setBarcodeFormats(Barcode.CODE_128)
+                    .build();
+        }else {
+            barcodeDetector = new BarcodeDetector.Builder(context)
+                    .build();
+        }
+
+
+
+
+
         // this is original code.
         /*BarcodeTrackerFactory barcodeFactory = new BarcodeTrackerFactory(mGraphicOverlay);*/
 
@@ -310,7 +325,9 @@ public final class BarcodeCaptureActivity extends AppCompatActivity {
             // we have permission, so create the camerasource
             boolean autoFocus = getIntent().getBooleanExtra(AutoFocus, false);
             boolean useFlash = getIntent().getBooleanExtra(UseFlash, false);
-            createCameraSource(autoFocus, useFlash);
+            boolean code128 = getIntent().getBooleanExtra(Code128, false);
+
+            createCameraSource(autoFocus, useFlash, code128);
             return;
         }
 
