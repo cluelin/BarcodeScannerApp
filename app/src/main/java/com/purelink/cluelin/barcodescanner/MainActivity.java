@@ -44,7 +44,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
     private CompoundButton useFlash;
     private CompoundButton onlyCode128;
     private TextView statusMessage;
-    private TextView barcodeValueTextView;
+    private EditText barcodeValueTextView;
     private EditText mailAddress;
 
     private ArrayList<String> barcodeValueList = new ArrayList<>();
@@ -61,7 +61,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
         setContentView(R.layout.activity_main);
 
         statusMessage = (TextView) findViewById(R.id.status_message);
-        barcodeValueTextView = (TextView) findViewById(R.id.barcode_value);
+        barcodeValueTextView = (EditText) findViewById(R.id.barcode_value);
 
         autoFocus = (CompoundButton) findViewById(R.id.auto_focus);
         useFlash = (CompoundButton) findViewById(R.id.use_flash);
