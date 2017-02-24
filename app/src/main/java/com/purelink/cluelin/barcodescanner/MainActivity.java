@@ -50,7 +50,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
     private CompoundButton autoFocus;
     private CompoundButton useFlash;
     private CompoundButton onlyCode128;
-    private TextView statusMessage;
+
     private EditText rxBarcodeValueView;
     private EditText txBarcodeValueView;
     private EditText mailAddress;
@@ -69,7 +69,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        statusMessage = (TextView) findViewById(R.id.status_message);
+
         rxBarcodeValueView = (EditText) findViewById(R.id.barcode_value_rx);
         txBarcodeValueView = (EditText) findViewById(R.id.barcode_value_tx);
 
@@ -134,7 +134,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
                 if (data != null) {
                     //this value include Barcode information
                     Barcode barcode = data.getParcelableExtra(BarcodeCaptureActivity.BarcodeObject);
-                    statusMessage.setText(R.string.barcode_success);
+
 
 
                     //Rx에 속하는 값인지 Tx에 속하는 값인지 확인
@@ -168,12 +168,11 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
 
                 } else {
-                    statusMessage.setText(R.string.barcode_failure);
+
                     Log.d(TAG, "No barcode captured, intent data is null");
                 }
             } else {
-                statusMessage.setText(String.format(getString(R.string.barcode_error),
-                        CommonStatusCodes.getStatusCodeString(resultCode)));
+
             }
         } else {
             super.onActivityResult(requestCode, resultCode, data);
@@ -190,6 +189,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
     }
 
+    //바코드 정보를 서버로 전송
     public void sendBarcodeValueToServer(View v) {
 
         ServerSocket serverSocket = new ServerSocket(ServerInformation.SERVER_ADDRESS, ServerInformation.PORT);
@@ -201,6 +201,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
     }
 
+    //바코드 정보를 메일로 전송
     public void sendEmail(View v) {
 
         Intent emailIntent = new Intent(Intent.ACTION_SEND);
@@ -212,7 +213,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
         //제목
         emailIntent.putExtra(Intent.EXTRA_SUBJECT, "시리얼 넘버");
         //내용
-        emailIntent.putExtra(Intent.EXTRA_TEXT, "" + rxBarcodeValueView.getText() + txBarcodeValueView.getText());
+        emailIntent.putExtra(Intent.EXTRA_TEXT, "rx \n" + rxBarcodeValueView.getText().toString() + "\n" + "tx \n" + txBarcodeValueView.getText().toString());
 
 
         try {
