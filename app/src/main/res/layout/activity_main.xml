@@ -8,16 +8,6 @@
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin">
 
-    <TextView
-        android:id="@+id/status_message"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignParentEnd="true"
-        android:layout_alignParentRight="true"
-        android:layout_centerHorizontal="true"
-        android:text="@string/barcode_header"
-        android:textAppearance="?android:attr/textAppearanceLarge" />
-
 
     <CheckBox
         android:id="@+id/auto_focus"
@@ -42,19 +32,22 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_below="@id/list_title"
-        android:layout_above="@id/mailID"
+
         android:orientation="horizontal">
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:orientation="vertical"
-            android:layout_weight="1">
+            android:layout_weight="1"
+            android:orientation="vertical">
 
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="RX"
-                android:textAlignment="center"/>
+                android:textAlignment="center"
+                android:textColor="#000000"
+                android:textSize="20sp" />
 
             <ScrollView
                 android:layout_width="match_parent"
@@ -84,13 +77,16 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:orientation="vertical"
-            android:layout_weight="1">
+            android:layout_weight="1"
+            android:orientation="vertical">
+
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="TX"
-                android:textAlignment="center"/>
+                android:textAlignment="center"
+                android:textColor="#000000"
+                android:textSize="20sp" />
 
             <ScrollView
                 android:layout_width="match_parent"
@@ -121,26 +117,14 @@
     </LinearLayout>
 
 
-
-    <EditText
-        android:id="@+id/mailID"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_above="@+id/read_barcode"
-
-        android:layout_alignEnd="@+id/read_barcode"
-        android:layout_marginEnd="26dp"
-        android:text="fred@purelinkav.com" />
-
     <Button
-        android:id="@+id/button2"
+        android:id="@+id/button3"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_above="@+id/read_barcode"
         android:layout_alignParentEnd="true"
-        android:layout_marginEnd="43dp"
-        android:onClick="sendEmail"
-        android:text="전송" />
+        android:onClick="sendBarcodeValueToServer"
+        android:text="서버로 전송"
+        android:layout_alignBottom="@+id/button2" />
 
     <Button
         android:id="@+id/read_barcode"
@@ -155,7 +139,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentEnd="true"
-        android:layout_below="@+id/status_message"
+
         android:checked="true"
         android:text="CODE_128" />
 
@@ -163,10 +147,28 @@
         android:id="@+id/use_flash"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/status_message"
+
         android:layout_centerHorizontal="true"
         android:checked="false"
         android:text="@string/use_flash" />
+
+    <EditText
+        android:id="@+id/mailID"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+
+        android:layout_above="@+id/read_barcode"
+        android:layout_alignParentStart="true"
+        android:text="fred@purelinkav.com" />
+
+    <Button
+        android:id="@+id/button2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/read_barcode"
+        android:layout_toStartOf="@+id/button3"
+        android:onClick="sendEmail"
+        android:text="전송" />
 
 
 </RelativeLayout>

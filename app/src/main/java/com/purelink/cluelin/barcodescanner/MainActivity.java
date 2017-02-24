@@ -17,10 +17,14 @@
 package com.purelink.cluelin.barcodescanner;
 
 import android.content.ActivityNotFoundException;
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.app.Activity;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.Message;
 import android.util.Log;
 import android.view.View;
 import android.widget.CompoundButton;
@@ -31,6 +35,7 @@ import android.widget.Toast;
 import com.google.android.gms.common.api.CommonStatusCodes;
 import com.google.android.gms.vision.barcode.Barcode;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 
 /**
@@ -39,15 +44,19 @@ import java.util.ArrayList;
  */
 public class MainActivity extends Activity implements View.OnClickListener {
 
+    MyHandler handler = new MyHandler(this);
+
     // use a compound button so either checkbox or switch widgets work.
     private CompoundButton autoFocus;
     private CompoundButton useFlash;
     private CompoundButton onlyCode128;
     private TextView statusMessage;
-    private EditText barcodeValueTextView;
+    private EditText rxBarcodeValueView;
+    private EditText txBarcodeValueView;
     private EditText mailAddress;
 
-    private ArrayList<String> barcodeValueList = new ArrayList<>();
+    private ArrayList<String> rxBarcodeValueList = new ArrayList<>();
+    private ArrayList<String> txBarcodeValueList = new ArrayList<>();
 
     String serialSequence = "";
 
@@ -61,7 +70,8 @@ public class MainActivity extends Activity implements View.OnClickListener {
         setContentView(R.layout.activity_main);
 
         statusMessage = (TextView) findViewById(R.id.status_message);
-        barcodeValueTextView = (EditText) findViewById(R.id.barcode_value);
+        rxBarcodeValueView = (EditText) findViewById(R.id.barcode_value_rx);
+        txBarcodeValueView = (EditText) findViewById(R.id.barcode_value_tx);
 
         autoFocus = (CompoundButton) findViewById(R.id.auto_focus);
         useFlash = (CompoundButton) findViewById(R.id.use_flash);
@@ -126,32 +136,37 @@ public class MainActivity extends Activity implements View.OnClickListener {
                     Barcode barcode = data.getParcelableExtra(BarcodeCaptureActivity.BarcodeObject);
                     statusMessage.setText(R.string.barcode_success);
 
-                    //중복확인
-                    if (barcodeValueList.contains(barcode.displayValue)){
 
-                        Log.d("태그", "중복됨");
-                        Toast.makeText(this, "중복됨!", Toast.LENGTH_SHORT).show();
+                    //Rx에 속하는 값인지 Tx에 속하는 값인지 확인
+                    if (getWindow().getCurrentFocus() == rxBarcodeValueView) {
+                        //중복확인
+                        if (rxBarcodeValueList.contains(barcode.displayValue)) {
 
-                    }else{
-                        Log.d("태그", "barcode.displayValue : " + barcode.displayValue);
-                        barcodeValueList.add(barcode.displayValue);
+                            Toast.makeText(this, "중복됨!", Toast.LENGTH_SHORT).show();
 
-                        Log.d("태그", "barcode size : " + barcodeValueList.size());
+                        } else {
+
+                            rxBarcodeValueList.add(barcode.displayValue);
+                            addBarcodeValueToBarcodeArea(rxBarcodeValueView, rxBarcodeValueList.get(rxBarcodeValueList.size() - 1));
+
+                        }
+
+                    } else if (getWindow().getCurrentFocus() == txBarcodeValueView) {
+
+                        //중복확인
+                        if (txBarcodeValueList.contains(barcode.displayValue)) {
+
+                            Toast.makeText(this, "중복됨!", Toast.LENGTH_SHORT).show();
+
+                        } else {
+
+                            txBarcodeValueList.add(barcode.displayValue);
+                            addBarcodeValueToBarcodeArea(txBarcodeValueView, txBarcodeValueList.get(txBarcodeValueList.size() - 1));
+
+                        }
                     }
 
 
-                    //가지고 있는 Serial number 목록에 읽어온 Barcode값을 추가.
-
-                    serialSequence = "";
-                    for (int i = 0 ; i < barcodeValueList.size() ; i++){
-                        serialSequence = serialSequence + barcodeValueList.get(i) + "\n";
-                        Log.d("태그", "barcodeValueList.get(i) "  + barcodeValueList.get(i) );
-                    }
-
-                    //가지고있는 Serial number list를 textView에 출력.
-                    barcodeValueTextView.setText(barcodeValueList.size() + "개 \n" + serialSequence );
-
-                    Log.d(TAG, "Barcode read: " + barcode.displayValue);
                 } else {
                     statusMessage.setText(R.string.barcode_failure);
                     Log.d(TAG, "No barcode captured, intent data is null");
@@ -165,6 +180,26 @@ public class MainActivity extends Activity implements View.OnClickListener {
         }
     }
 
+    private void addBarcodeValueToBarcodeArea(EditText targetArea, String targetString) {
+
+        if (targetArea.getText().toString() != "") {
+            targetString = targetArea.getText().toString() + "\n" + targetString;
+        }
+
+        targetArea.setText(targetString);
+
+    }
+
+    public void sendBarcodeValueToServer(View v) {
+
+        ServerSocket serverSocket = new ServerSocket(ServerInformation.SERVER_ADDRESS, ServerInformation.PORT);
+        serverSocket.setRxBarcodeValue("rx \n" + rxBarcodeValueView.getText().toString() + "\n" + "tx \n" + txBarcodeValueView.getText().toString());
+        serverSocket.setHandler(handler);
+        serverSocket.start();
+
+
+
+    }
 
     public void sendEmail(View v) {
 
@@ -172,11 +207,12 @@ public class MainActivity extends Activity implements View.OnClickListener {
         emailIntent.setData(Uri.parse("mailto:"));
         emailIntent.setType("text/plain");
 
-        emailIntent.putExtra(Intent.EXTRA_EMAIL,new String[]{mailAddress.getText() + ""});
-        Log.d("name", mailAddress.getText() + "");
-        emailIntent.putExtra(Intent.EXTRA_SUBJECT, "시리얼 넘버");
-        emailIntent.putExtra(Intent.EXTRA_TEXT, serialSequence);
+        emailIntent.putExtra(Intent.EXTRA_EMAIL, new String[]{mailAddress.getText() + ""});
 
+        //제목
+        emailIntent.putExtra(Intent.EXTRA_SUBJECT, "시리얼 넘버");
+        //내용
+        emailIntent.putExtra(Intent.EXTRA_TEXT, "" + rxBarcodeValueView.getText() + txBarcodeValueView.getText());
 
 
         try {
@@ -187,5 +223,26 @@ public class MainActivity extends Activity implements View.OnClickListener {
             e.printStackTrace();
         }
 
+    }
+
+
+    private void handleMessage(Message msg) {
+        Toast.makeText(getApplicationContext(), "전송 성공", Toast.LENGTH_LONG).show();
+    }
+
+
+    private static class MyHandler extends Handler {
+        private final WeakReference<MainActivity> mActivity;
+        public MyHandler(MainActivity activity) {
+            mActivity = new WeakReference<MainActivity>(activity);
+        }
+
+        @Override
+        public void handleMessage(Message msg) {
+            MainActivity activity = mActivity.get();
+            if (activity != null) {
+                activity.handleMessage(msg);
+            }
+        }
     }
 }
