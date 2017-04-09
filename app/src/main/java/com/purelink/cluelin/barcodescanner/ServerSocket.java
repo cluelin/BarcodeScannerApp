@@ -22,7 +22,6 @@ public class ServerSocket extends Thread {
 
     OutputStream outputStream;
     PrintStream printStream;
-
     String BarcodeValue;
     String soNumber;
 
@@ -38,10 +37,9 @@ public class ServerSocket extends Thread {
     public void run() {
 
         try {
-            Log.d("toServer", "소켓 접속 시도" +ServerInformation.SERVER_ADDRESS );
+            Log.d("toServer", "소켓 접속 시도" + ServerInformation.SERVER_ADDRESS);
             clientSocket = new Socket(ServerInformation.SERVER_ADDRESS, ServerInformation.PORT);
             Log.d("fromServer", "소켓 접속 성공");
-
 
 
             //output stream 열어준다.
@@ -53,7 +51,7 @@ public class ServerSocket extends Thread {
             sendBarcodeValue();
 
             // SO Number를 JSON 으로 보내줌.
-            if(soNumber != null && !soNumber.equals("")){
+            if (soNumber != null && !soNumber.equals("")) {
                 JSONObject obj = new JSONObject();
                 obj.put("soNumber", soNumber);
                 printStream.println(obj.toString());
@@ -95,7 +93,7 @@ public class ServerSocket extends Thread {
         this.BarcodeValue = BarcodeValue;
     }
 
-    public void setSoValue(String soNumber){
+    public void setSoValue(String soNumber) {
         this.soNumber = soNumber;
 
         Log.d("tag", "So : " + soNumber);
