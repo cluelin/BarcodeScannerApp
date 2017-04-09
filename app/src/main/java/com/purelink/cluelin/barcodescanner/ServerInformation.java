@@ -6,8 +6,8 @@ package com.purelink.cluelin.barcodescanner;
 
 public interface ServerInformation {
 
-    String SERVER_ADDRESS = "192.168.0.63";
-//    String SERVER_ADDRESS = "192.168.0.140";
+//    String SERVER_ADDRESS = "192.168.0.63";
+    String SERVER_ADDRESS = "192.168.1.2";
     int PORT = 9999;
 
 }

@@ -17,19 +17,16 @@
 package com.purelink.cluelin.barcodescanner;
 
 import android.content.ActivityNotFoundException;
-import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.app.Activity;
 import android.os.Handler;
-import android.os.Looper;
 import android.os.Message;
 import android.util.Log;
 import android.view.View;
 import android.widget.CompoundButton;
 import android.widget.EditText;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.common.api.CommonStatusCodes;
@@ -53,6 +50,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
     private EditText rxBarcodeValueView;
     private EditText txBarcodeValueView;
+    private EditText soTextView;
     private EditText mailAddress;
 
     private ArrayList<String> rxBarcodeValueList = new ArrayList<>();
@@ -73,6 +71,8 @@ public class MainActivity extends Activity implements View.OnClickListener {
         rxBarcodeValueView = (EditText) findViewById(R.id.barcode_value_rx);
         txBarcodeValueView = (EditText) findViewById(R.id.barcode_value_tx);
 
+        soTextView = (EditText) findViewById(R.id.list_title);
+
         autoFocus = (CompoundButton) findViewById(R.id.auto_focus);
         useFlash = (CompoundButton) findViewById(R.id.use_flash);
         onlyCode128 = (CompoundButton) findViewById(R.id.code_128);
@@ -92,18 +92,25 @@ public class MainActivity extends Activity implements View.OnClickListener {
     @Override
     public void onClick(View v) {
         if (v.getId() == R.id.read_barcode) {
-            // launch barcode activity.
-            Intent intent = new Intent(this, BarcodeCaptureActivity.class);
-            intent.putExtra(BarcodeCaptureActivity.AutoFocus, autoFocus.isChecked());
-            intent.putExtra(BarcodeCaptureActivity.UseFlash, useFlash.isChecked());
-            intent.putExtra(BarcodeCaptureActivity.Code128, onlyCode128.isChecked());
-
-            //바코드로 찍은 값을 Result로 받아오게 함.
-            //Barcode value return to Result.
-            startActivityForResult(intent, RC_BARCODE_CAPTURE);
+            callBarcodeCapture();
         }
 
     }
+
+    private void callBarcodeCapture(){
+
+        // launch barcode activity.
+        Intent intent = new Intent(this, BarcodeCaptureActivity.class);
+        intent.putExtra(BarcodeCaptureActivity.AutoFocus, autoFocus.isChecked());
+        intent.putExtra(BarcodeCaptureActivity.UseFlash, useFlash.isChecked());
+        intent.putExtra(BarcodeCaptureActivity.Code128, onlyCode128.isChecked());
+
+        //바코드로 찍은 값을 Result로 받아오게 함.
+        //Barcode value return to Result.
+        startActivityForResult(intent, RC_BARCODE_CAPTURE);
+
+    }
+
 
     /**
      * Called when an activity you launched exits, giving you the requestCode
@@ -166,6 +173,8 @@ public class MainActivity extends Activity implements View.OnClickListener {
                         }
                     }
 
+                    callBarcodeCapture();
+
 
                 } else {
 
@@ -182,7 +191,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
     private void addBarcodeValueToBarcodeArea(EditText targetArea, String targetString) {
 
         if (targetArea.getText().toString() != "") {
-            targetString = targetArea.getText().toString() + "\n" + targetString;
+            targetString = targetArea.getText().toString() + targetString + "\n";
         }
 
         targetArea.setText(targetString);
@@ -193,7 +202,10 @@ public class MainActivity extends Activity implements View.OnClickListener {
     public void sendBarcodeValueToServer(View v) {
 
         ServerSocket serverSocket = new ServerSocket(ServerInformation.SERVER_ADDRESS, ServerInformation.PORT);
-        serverSocket.setRxBarcodeValue("rx \n" + rxBarcodeValueView.getText().toString() + "\n" + "tx \n" + txBarcodeValueView.getText().toString());
+        serverSocket.setBarcodeValue("rx \n" + rxBarcodeValueView.getText().toString() + "\n" + "tx \n" + txBarcodeValueView.getText().toString());
+
+        serverSocket.setSoValue(soTextView.getText().toString());
+
         serverSocket.setHandler(handler);
         serverSocket.start();
 

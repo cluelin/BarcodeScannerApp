@@ -1,14 +1,12 @@
 package com.purelink.cluelin.barcodescanner;
 
 import android.os.Handler;
-import android.os.Message;
 import android.util.Log;
-import android.view.View;
-import android.widget.Toast;
+
+import org.json.JSONObject;
 
 import java.io.OutputStream;
 import java.io.PrintStream;
-import java.lang.ref.WeakReference;
 import java.net.Socket;
 
 
@@ -20,51 +18,66 @@ public class ServerSocket extends Thread {
 
     final String SERVER_ADDRESS;
     final int SERVER_PORT;
-    static Socket serverSocket;
+    static Socket clientSocket;
 
     OutputStream outputStream;
     PrintStream printStream;
 
-    String rxBarcodeValue;
-    String txBarcodeValue;
+    String BarcodeValue;
+    String soNumber;
+
 
     Handler handler;
 
-    public ServerSocket(String sAddr, int sPort){
+    public ServerSocket(String sAddr, int sPort) {
         SERVER_ADDRESS = sAddr;
         SERVER_PORT = sPort;
 
     }
 
-    public void run(){
+    public void run() {
 
         try {
-            Log.d("toServer", "소켓 접속 시도");
-            serverSocket = new Socket(ServerInformation.SERVER_ADDRESS, ServerInformation.PORT);
+            Log.d("toServer", "소켓 접속 시도" +ServerInformation.SERVER_ADDRESS );
+            clientSocket = new Socket(ServerInformation.SERVER_ADDRESS, ServerInformation.PORT);
             Log.d("fromServer", "소켓 접속 성공");
 
 
-            outputStream = serverSocket.getOutputStream();
+
+            //output stream 열어준다.
+            outputStream = clientSocket.getOutputStream();
             printStream = new PrintStream(outputStream);
 
+
+            //저장한 rx, tx를 전부 내보낸다. JSON이용하지않고있음.
             sendBarcodeValue();
+
+            // SO Number를 JSON 으로 보내줌.
+            if(soNumber != null && !soNumber.equals("")){
+                JSONObject obj = new JSONObject();
+                obj.put("soNumber", soNumber);
+                printStream.println(obj.toString());
+            }
+
 
             handler.sendMessage(handler.obtainMessage());
 
 
-        }catch (Exception e){
+            //여기 달라짐. <- 소켓 종료가 이전버전까지는 없엇음.
+            clientSocket.close();
+
+
+        } catch (Exception e) {
             e.printStackTrace();
 
         }
 
     }
 
-    public void sendBarcodeValue(){
+    public void sendBarcodeValue() {
 
         try {
-            printStream.println(rxBarcodeValue);
-            printStream.println(txBarcodeValue);
-            Log.d("toServer", "소켓으로 가게정보 보내기 : " + rxBarcodeValue.toString());
+            printStream.println(BarcodeValue);
 
 
         } catch (Exception e) {
@@ -73,17 +86,19 @@ public class ServerSocket extends Thread {
 
     }
 
-    public void setHandler(Handler handler){
+    public void setHandler(Handler handler) {
         this.handler = handler;
 
     }
 
-    public void setRxBarcodeValue(String rxBarcodeValue) {
-        this.rxBarcodeValue = rxBarcodeValue;
+    public void setBarcodeValue(String BarcodeValue) {
+        this.BarcodeValue = BarcodeValue;
     }
 
-    public void setTxBarcodeValue(String txBarcodeValue) {
-        this.txBarcodeValue = txBarcodeValue;
+    public void setSoValue(String soNumber){
+        this.soNumber = soNumber;
+
+        Log.d("tag", "So : " + soNumber);
     }
 
 
